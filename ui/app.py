@@ -131,12 +131,16 @@ if image_keys:
 
     st.markdown("""
     <style>
-    /* Target buttons inside the pagination row specifically */
+    div[data-testid="stColumn"] .stButton {
+        display: flex;
+        justify-content: center;
+    }
     div[data-testid="stColumn"] button p {
         line-height: 1.5 !important;
     }
     div[data-testid="stColumn"] button {
         height: 65px !important;  /* Strict height force */
+        width: 195px !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
