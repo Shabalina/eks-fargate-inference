@@ -84,13 +84,13 @@ st.markdown("""
         line-height: 1.5 !important;
     }
     div[data-testid="stColumn"] button:not([aria-label="Fullscreen"]):hover {
-        background-color: #c3e6e6 !important; /* Lighter blue on hover */
+        background-color: #dcf2f2 !important; /* Lighter blue on hover */
         transform: scale(1.03) !important;     /* Subtle pop */
         box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important;
         cursor: pointer !important;
     }
     div[data-testid="stColumn"] button:not([aria-label="Fullscreen"]) {
-        background-color: #9bc7c7 !important; 
+        background-color: #c3e6e6 !important; 
         color: black !important;
         border: 2px solid #000000 !important; /* Bold black edge */
         border-radius: 4px !important;
