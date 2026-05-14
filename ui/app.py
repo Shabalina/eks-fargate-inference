@@ -135,7 +135,6 @@ with st.container():
     div[data-testid="stColumn"] .stButton {
         display: flex !important;
         justify-content: center !important;
-        width: 100% !important; /* Force wrapper to use full column width */
     }
     div[data-testid="stColumn"] button p {
         line-height: 1.5 !important;
@@ -143,9 +142,7 @@ with st.container():
     div[data-testid="stColumn"] button {
         height: 65px !important;  /* Strict height force */
         width: 195px !important;
-        min-width: 195px !important;    /* FORCE browser to not compress width */
-        flex-shrink: 0 !important;      /* Prevent flexbox shrinking bugs */
-            
+        
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
@@ -153,7 +150,7 @@ with st.container():
     }
     </style>
     """, unsafe_allow_html=True)
-    
+
     col_prev, col_spacer, col_next = st.columns([1, 4, 1])
 
     with col_prev:
