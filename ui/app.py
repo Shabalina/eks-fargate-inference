@@ -126,12 +126,12 @@ if image_keys:
     col_prev, col_spacer, col_next = st.columns([1, 4, 1])
 
     with col_prev:
-        if st.button("◀️ Previous") and st.session_state['page_number'] > 0:
+        if st.button("◀️\nPrevious", key="btn_prev_page") and st.session_state['page_number'] > 0:
             st.session_state['page_number'] -= 1
             st.rerun()
 
     with col_next:
-        if st.button("Next ▶️") and st.session_state['page_number'] < n_pages - 1:
+        if st.button("▶️\nNext", key="btn_next_page") and st.session_state['page_number'] < n_pages - 1:
             st.session_state['page_number'] += 1
             st.rerun()
 
@@ -143,14 +143,7 @@ if selected_image_bytes is not None:
         col_img, col_res = st.columns([1, 1]) 
 
         with col_img:
-                st.image(st.session_state['preview_img'], caption="Selected for Analysis", use_container_width=True)
-                
-                # --- MANIFEST LOOKUP ---
-                # if current_filename in manifest:
-                #     file_info = manifest[current_filename]
-                #     st.info(f"**Sample Source:** {file_info.get('type', 'N/A').replace('_', ' ').title()}")
-                #     if file_info.get('note'):
-                #         st.caption(f"📝 {file_info['note']}")
+                st.image(st.session_state['preview_img'], use_container_width=True)
 
         with col_res:
             with st.spinner("🔬 Talking to SageMaker... (First analysis may take few seconds while the model warms up)"):
