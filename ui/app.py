@@ -61,18 +61,25 @@ if 'page_number' not in st.session_state:
 
 # Page config
 st.set_page_config(page_title="Cell DINOv2 Classifier", page_icon="🔬", layout="centered")
-
-st.title("🔬 Cell siRNA Classifier")
+st.title(
+    "🔬 Cell siRNA Classifier",
+    help="""
+    This application runs a trained DINOv2 model to classify cellular microscopy images based on the specific chemical treatment (siRNA) applied during laboratory testing.
+    
+    🧬 Why is this needed?
+    Manual analysis of millions of cellular images is impossible for human scientists. Automating this classification allows pharmaceutical companies to rapidly screen thousands of drug candidates, accelerating drug discovery timelines and reducing lab-to-clinic costs.
+    """
+)
+st.divider()
 
 # --- THE TOP SLOT FOR RESULTS---
 # Container stays empty until a prediction is made.
 results_container = st.container()
 
 st.markdown("""
-### 🧬 Cellular Image Classification
+### Cellular Image Classification
 Select a file from the **gallery sidebar** to run a prediction using our 
 **DINOv2-based inference engine**. 
-
 The system will classify the microscopy image to identify the corresponding **siRNA ID**.
 """)
 
@@ -102,7 +109,10 @@ if image_keys:
         with cols[idx % 5]:
             st.image(url, use_container_width=True)
             s3_filename = PurePosixPath(key).name
-            if st.button(f"Analyze {s3_filename}", key=f"btn_{s3_filename}", use_container_width=True):
+            # Display the filename as a caption (truncating if too long)
+            display_name = (s3_filename[:18] + '..') if len(s3_filename) > 20 else s3_filename
+            st.caption(f"📄 {display_name}")
+            if st.button("Analyze", key=f"btn_{s3_filename}", use_container_width=True):
                 # Get the raw bytes from S3
                 image_obj = s3.get_object(Bucket=BUCKET, Key=key)
                 selected_image_bytes = image_obj['Body'].read()

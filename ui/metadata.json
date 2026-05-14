@@ -9,10 +9,10 @@
         "type": "smoke_test_pass",
         "note": "Regression sample from CI/CD smoke test"
     },
-   "RPE-05_2_O15_s1.jpeg": {
-        "label": "759",
-        "type": "smoke_test_fail",
-        "note": "Regression sample from CI/CD smoke test"
+     "RPE-05_1_K20_s2.jpeg": {
+        "label": "138",
+        "type": "random_validation",
+        "note": "Randomly selected from validation set."
     },
    "HUVEC-15_1_M14_s2.jpeg": {
         "label": "759",
@@ -39,36 +39,27 @@
         "type": "smoke_test_pass",
         "note": "Regression sample from CI/CD smoke test"
     },
-   "HEPG2-01_1_H09_s1.jpeg": {
-        "label": "1099",
-        "type": "smoke_test_fail",
-        "note": "Regression sample from CI/CD smoke test"
-    },
-    "U2OS-02_4_J16_s2.jpeg": {
-        "label": "136",
-        "type": "smoke_test_fail",
-        "note": "Regression sample from CI/CD smoke test"
+     "HEPG2-07_4_D23_s2.jpeg": {
+        "label": "271",
+        "type": "random_validation",
+        "note": "Randomly selected from validation set."
     },
     "U2OS-02_3_N15_s2.jpeg": {
         "label": "382",
         "type": "random_validation",
         "note": "Randomly selected from validation set."
     },
-    "RPE-05_1_K20_s2.jpeg": {
-        "label": "138",
-        "type": "random_validation",
-        "note": "Randomly selected from validation set."
+   "RPE-05_2_O15_s1.jpeg": {
+        "label": "759",
+        "type": "smoke_test_fail",
+        "note": "Regression sample from CI/CD smoke test"
     },
     "HEPG2-07_4_F21_s2.jpeg": {
         "label": "119",
         "type": "random_validation",
         "note": "Randomly selected from validation set."
     },
-    "HEPG2-07_4_D23_s2.jpeg": {
-        "label": "271",
-        "type": "random_validation",
-        "note": "Randomly selected from validation set."
-    },
+   
     "HUVEC-09_2_N06_s2.jpeg": {
         "label": "517",
         "type": "random_validation",
@@ -223,6 +214,16 @@
         "label": "392",
         "type": "random_validation",
         "note": "Randomly selected from validation set."
+    },
+    "HEPG2-01_1_H09_s1.jpeg": {
+        "label": "1099",
+        "type": "smoke_test_fail",
+        "note": "Regression sample from CI/CD smoke test"
+    },
+    "U2OS-02_4_J16_s2.jpeg": {
+        "label": "136",
+        "type": "smoke_test_fail",
+        "note": "Regression sample from CI/CD smoke test"
     },
     "HEPG2-02_1_F13_s2.jpeg": {
         "label": "520",
