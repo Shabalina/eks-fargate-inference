@@ -62,59 +62,6 @@ if 'page_number' not in st.session_state:
 
 st.set_page_config(page_title="Cell DINOv2 Classifier", page_icon="🔬", layout="centered")
 
-# Injecting all layout overrides at once
-st.markdown("""
-    <style>
-    /* ==========================================
-       1. GLOBAL / PAGINATION BUTTONS (3:1 Ratio)
-       ========================================== */
-    div[data-testid="stColumn"] .stButton {
-        display: flex !important;
-        justify-content: center !important;
-        width: 100% !important; /* Force wrapper to use full column width */
-    }
-    div[data-testid="stColumn"] button p {
-        line-height: 1.5 !important;
-    }
-    div[data-testid="stColumn"] button {
-        height: 65px !important;  /* Strict height force */
-        width: 195px !important;
-        min-width: 195px !important;    /* FORCE browser to not compress width */
-        flex-shrink: 0 !important;      /* Prevent flexbox shrinking bugs */
-            
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-     /* ==========================================
-       2. GALLERY CONTAINER OVERRIDES (Invisible Stretched Card)
-       ========================================== */
-    /* Turn ONLY the gallery columns into relative parent boxes */
-    div[data-testid="stVerticalBlock"] div[data-testid="stColumn"] {
-        position: relative;
-    }
-            
-    /* Stretch the gallery buttons completely over the image and caption card */
-    div[data-testid="stVerticalBlock"] div[data-testid="stColumn"] .stButton > button {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0 !important; /* Forces the button to be completely invisible */
-        z-index: 10;          /* Places it on top of the graphics layer */
-    }
-    
-    /* Add a clean hover animation to show the image card is interactive */
-    div[data-testid="stVerticalBlock"] div[data-testid="stColumn"]:hover {
-        transform: scale(1.02);
-        transition: transform 0.2s ease-in-out;
-        cursor: pointer;
-    }       
-    </style>
-    """, unsafe_allow_html=True)
-
 # Page title and description
 st.title("🔬 Cell siRNA Classifier")
 with st.expander("📖 About this Project & Drug Discovery Impact", expanded=False):
@@ -166,7 +113,7 @@ with st.container():
                 display_name = (s3_filename[:18] + '..') if len(s3_filename) > 20 else s3_filename
                 st.caption(f"📄 {display_name}")
 
-                if st.button("🔎 Analyze This Sample", key=f"btn_{s3_filename}", use_container_width=True):
+                if st.button("🔎 Analyze This Sample", key=f"btn_{s3_filename}", use_container_width=True, type="primary"):
                     # Get the raw bytes from S3
                     image_obj = s3.get_object(Bucket=BUCKET, Key=key)
                     selected_image_bytes = image_obj['Body'].read()
@@ -179,6 +126,34 @@ with st.container():
 
     # --- PAGINATION CONTROLS ---
     st.write(f"Showing page {st.session_state['page_number'] + 1} of {n_pages}")
+
+    st.markdown("""
+    <style>
+    /* ==========================================
+       1. GLOBAL / PAGINATION BUTTONS (3:1 Ratio)
+       ========================================== */
+    div[data-testid="stColumn"] .stButton {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important; /* Force wrapper to use full column width */
+    }
+    div[data-testid="stColumn"] button p {
+        line-height: 1.5 !important;
+    }
+    div[data-testid="stColumn"] button {
+        height: 65px !important;  /* Strict height force */
+        width: 195px !important;
+        min-width: 195px !important;    /* FORCE browser to not compress width */
+        flex-shrink: 0 !important;      /* Prevent flexbox shrinking bugs */
+            
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     col_prev, col_spacer, col_next = st.columns([1, 4, 1])
 
     with col_prev:
