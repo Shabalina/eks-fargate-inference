@@ -123,6 +123,22 @@ if image_keys:
 
     # --- PAGINATION CONTROLS ---
     st.write(f"Showing page {st.session_state['page_number'] + 1} of {n_pages}")
+
+    st.markdown("""
+    <style>
+    /* Target buttons inside the pagination row specifically */
+    div[data-testid="stColumn"] button p {
+        line-height: 1.5 !important;
+    }
+    div[data-testid="stColumn"] button {
+        height: 65px !important;  /* Strict height force */
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     col_prev, col_spacer, col_next = st.columns([1, 4, 1])
 
     with col_prev:
