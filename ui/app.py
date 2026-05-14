@@ -110,7 +110,7 @@ if image_keys:
             # Display the filename as a caption (truncating if too long)
             display_name = (s3_filename[:18] + '..') if len(s3_filename) > 20 else s3_filename
             st.caption(f"📄 {display_name}")
-            if st.button("Analyze", key=f"btn_{s3_filename}", use_container_width=True):
+            if st.button("Click to analyze", key=f"btn_{s3_filename}", use_container_width=True):
                 # Get the raw bytes from S3
                 image_obj = s3.get_object(Bucket=BUCKET, Key=key)
                 selected_image_bytes = image_obj['Body'].read()
