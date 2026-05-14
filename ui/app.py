@@ -60,6 +60,8 @@ s3 = boto3.client(
 if 'page_number' not in st.session_state:
     st.session_state['page_number'] = 0
 
+st.set_page_config(page_title="Cell DINOv2 Classifier", page_icon="🔬", layout="centered")
+
 # Injecting all layout overrides at once
 st.markdown("""
     <style>
@@ -114,7 +116,6 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Page title and description
-st.set_page_config(page_title="Cell DINOv2 Classifier", page_icon="🔬", layout="centered")
 st.title("🔬 Cell siRNA Classifier")
 with st.expander("📖 About this Project & Drug Discovery Impact", expanded=False):
     st.markdown("""
