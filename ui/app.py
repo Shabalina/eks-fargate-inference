@@ -80,7 +80,6 @@ st.markdown("""
 Select a file from the gallery below to run a prediction using the 
 **DINOv2-based inference engine**. The system will automatically identify the corresponding **siRNA ID**.
 """)
-st.write("---")
 
 # --- s3 GALLERY LOGIC---
 st.subheader("S3 Test Sample Gallery")
@@ -127,12 +126,12 @@ if image_keys:
     col_prev, col_spacer, col_next = st.columns([1, 4, 1])
 
     with col_prev:
-        if st.button("⬅️ Previous") and st.session_state['page_number'] > 0:
+        if st.button("◀️ Previous") and st.session_state['page_number'] > 0:
             st.session_state['page_number'] -= 1
             st.rerun()
 
     with col_next:
-        if st.button("Next ➡️") and st.session_state['page_number'] < n_pages - 1:
+        if st.button("Next ▶️") and st.session_state['page_number'] < n_pages - 1:
             st.session_state['page_number'] += 1
             st.rerun()
 
