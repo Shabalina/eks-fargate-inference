@@ -1,5 +1,5 @@
 ## 🔬 Cell-DINO: End-to-End Cellular Image Classification
-[Live Demo Page](https://shabalina-cell-dino-api-uiapp-uqmv5v.streamlit.app) | [Architecture Overview](#system-architecture)
+[Live Demo Page](https://dub.sh/cell-classifier-demo) | [Architecture Overview](#system-architecture)
 
 A production-grade MLOps pipeline for classifying cellular images using DINO-based features, deployed on AWS with a fully automated CI/CD pipeline.
 
