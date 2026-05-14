@@ -77,11 +77,10 @@ st.divider()
 results_container = st.container()
 
 st.markdown("""
-### Cellular Image Classification
-Select a file from the **gallery sidebar** to run a prediction using our 
-**DINOv2-based inference engine**. 
-The system will classify the microscopy image to identify the corresponding **siRNA ID**.
+Select a file from the gallery below to run a prediction using the 
+**DINOv2-based inference engine**. The system will automatically identify the corresponding **siRNA ID**.
 """)
+st.write("---")
 
 # --- s3 GALLERY LOGIC---
 st.subheader("S3 Test Sample Gallery")
