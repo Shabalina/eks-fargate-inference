@@ -65,7 +65,7 @@ st.set_page_config(page_title="Cell DINOv2 Classifier", page_icon="🔬", layout
 st.title("🔬 Cell siRNA Classifier")
 with st.expander("📖 About this Project & Drug Discovery Impact", expanded=False):
     st.markdown("""
-    This application runs a trained DINOv2 model to classify cellular microscopy images based on the specific chemical treatment (siRNA) applied during laboratory testing.
+    This application runs a finetuned DINOv2 model to classify cellular microscopy images based on the specific chemical treatment (siRNA) applied during laboratory testing.
     
     🧬 **Why is this needed?**
     Manual analysis of millions of cellular images is impossible for human scientists. Automating this classification allows pharmaceutical companies to rapidly screen thousands of drug candidates, accelerating drug discovery timelines and reducing lab-to-clinic costs.
