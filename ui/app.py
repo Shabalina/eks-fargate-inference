@@ -7,6 +7,34 @@ import boto3
 import json
 from pathlib import PurePosixPath
 
+# Settings
+API_URL = st.secrets["API_URL"]
+BUCKET = st.secrets["BUCKET_NAME"]
+PREFIX = "converted_recurtion_data/dino_demo_sample"
+ITEMS_PER_PAGE = 10
+
+def get_sorted_s3_keys(s3_keys, manifest_order):
+    # Map filename -> full S3 key for quick lookup
+    key_map = {PurePosixPath(k).name: k for k in s3_keys}
+    
+    sorted_keys = []
+    
+    # add keys based on the JSON order
+    for filename in manifest_order:
+        if filename in key_map:
+            sorted_keys.append(key_map[filename])
+            # Remove from map so we don't duplicate later
+            del key_map[filename]
+            
+    # add any leftover S3 images alphabetically
+    remaining_keys = sorted(list(key_map.values()))
+    
+    return sorted_keys + remaining_keys
+
+def get_s3_images():
+    response = s3.list_objects_v2(Bucket=BUCKET, Prefix=PREFIX)
+    return [obj['Key'] for obj in response.get('Contents', []) if obj['Key'].lower().endswith(('.png', '.jpg', '.jpeg'))]
+
 # Load Manifest
 @st.cache_data # Cache to not reload every click
 def load_manifest():
@@ -17,6 +45,8 @@ def load_manifest():
     return {}
 
 manifest = load_manifest()
+curated_filenames = list(manifest.keys())
+selected_image_bytes = None
 
 # S3 Client
 s3 = boto3.client(
@@ -26,38 +56,30 @@ s3 = boto3.client(
     region_name=st.secrets["AWS_REGION"]
 )
 
-BUCKET = st.secrets["BUCKET_NAME"]
-PREFIX = "converted_recurtion_data/dino_demo_sample"
-
-def get_s3_images():
-    response = s3.list_objects_v2(Bucket=BUCKET, Prefix=PREFIX)
-    return [obj['Key'] for obj in response.get('Contents', []) if obj['Key'].lower().endswith(('.png', '.jpg', '.jpeg'))]
-
 if 'page_number' not in st.session_state:
     st.session_state['page_number'] = 0
-
-ITEMS_PER_PAGE = 10
-selected_image_bytes = None
 
 # Page config
 st.set_page_config(page_title="Cell DINOv2 Classifier", page_icon="🔬", layout="centered")
 
-# Settings
-API_URL = st.secrets["API_URL"]
-
 st.title("🔬 Cell siRNA Classifier")
-st.markdown("""
-Upload a cellular microscopy image to predict the **siRNA ID** using our 
-DINOv2-based inference engine.
-""")
 
 # --- THE TOP SLOT FOR RESULTS---
 # Container stays empty until a prediction is made.
 results_container = st.container()
 
+st.markdown("""
+### 🧬 Cellular Image Classification
+Select a file from the **gallery sidebar** to run a prediction using our 
+**DINOv2-based inference engine**. 
+
+The system will classify the microscopy image to identify the corresponding **siRNA ID**.
+""")
+
 # --- s3 GALLERY LOGIC---
 st.subheader("S3 Test Sample Gallery")
-image_keys = get_s3_images()
+raw_keys = get_s3_images()
+image_keys = get_sorted_s3_keys(raw_keys, curated_filenames)
 
 if image_keys:
     # Calculate total pages
@@ -80,7 +102,6 @@ if image_keys:
         with cols[idx % 5]:
             st.image(url, use_container_width=True)
             s3_filename = PurePosixPath(key).name
-            # if st.button("Predict", key=key):
             if st.button(f"Analyze {s3_filename}", key=f"btn_{s3_filename}", use_container_width=True):
                 # Get the raw bytes from S3
                 image_obj = s3.get_object(Bucket=BUCKET, Key=key)
@@ -90,7 +111,6 @@ if image_keys:
 
                 # Convert bytes to a PIL Image object and store image in session state
                 st.session_state['preview_img'] = Image.open(io.BytesIO(selected_image_bytes))
-                # st.rerun() # Ensure the top results block updates immediately
 
 
     # --- PAGINATION CONTROLS ---
@@ -118,11 +138,11 @@ if selected_image_bytes is not None:
                 st.image(st.session_state['preview_img'], caption="Selected for Analysis", use_container_width=True)
                 
                 # --- MANIFEST LOOKUP ---
-                if current_filename in manifest:
-                    file_info = manifest[current_filename]
-                    st.info(f"**Sample Source:** {file_info.get('type', 'N/A').replace('_', ' ').title()}")
-                    if file_info.get('note'):
-                        st.caption(f"📝 {file_info['note']}")
+                # if current_filename in manifest:
+                #     file_info = manifest[current_filename]
+                #     st.info(f"**Sample Source:** {file_info.get('type', 'N/A').replace('_', ' ').title()}")
+                #     if file_info.get('note'):
+                #         st.caption(f"📝 {file_info['note']}")
 
         with col_res:
             with st.spinner("🔬 Talking to SageMaker... (First analysis may take few seconds while the model warms up)"):
@@ -134,7 +154,6 @@ if selected_image_bytes is not None:
                     if response.status_code == 200:
                         result = response.json()
 
-                        # Extract result - adjust keys based on your FastAPI response
                         predicted_id = str(result.get('prediction') or result.get('sirna_id'))
                         confidence = result.get('confidence', 0)
 
@@ -143,23 +162,21 @@ if selected_image_bytes is not None:
                         if ground_truth:
                             is_match = str(predicted_id) == str(ground_truth)
                             if is_match:
-                                st.balloons()
-                                st.success("✅ VALIDATION PASSED: Prediction matches Ground Truth!")
+                                st.success(f"🎯 **Correct Prediction!** The model accurately identified siRNA ID: **{predicted_id}**.")
                             else:
-                                st.warning("❌ VALIDATION MISMATCH: Model guessed incorrectly.")
-                        
+                                st.error(f"⚠️ **Prediction Variance.** The model predicted **{predicted_id}**, but the labeled Ground Truth is **{ground_truth}**.")
+                                                
                         # Layout for results
                         col1, col2 = st.columns(2)
                         with col1:
                             st.metric("Predicted siRNA ID", f"#{result.get('sirna_id')}")
                             if ground_truth:
-                                st.markdown(f"**Actual ID:** `#{ground_truth}`")
+                                # small margin-top fix to align with the metric height
+                                st.markdown(f"<div style='margin-top: -15px;'><b>Actual ID:</b> <code>#{ground_truth}</code></div>", unsafe_allow_html=True)
                         with col2:
                             confidence = result.get('confidence', 0)
                             st.metric("Confidence Score", f"{confidence:.2%}")
-                            
-                        # Visual confidence bar
-                        st.progress(confidence)
+                            st.progress(confidence)
                         
                     else:
                         st.error(f"API Error ({response.status_code}): {response.text}")

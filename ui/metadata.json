@@ -9,21 +9,6 @@
         "type": "smoke_test_pass",
         "note": "Regression sample from CI/CD smoke test"
     },
-   "HUVEC-16_2_L03_s1.jpeg": {
-        "label": "550",
-        "type": "smoke_test_pass",
-        "note": "Regression sample from CI/CD smoke test"
-    },
-   "RPE-01_1_I23_s1.jpeg": {
-        "label": "565",
-        "type": "smoke_test_pass",
-        "note": "Regression sample from CI/CD smoke test"
-    },
-   "RPE-05_4_I16_s2.jpeg": {
-        "label": "136",
-        "type": "smoke_test_pass",
-        "note": "Regression sample from CI/CD smoke test"
-    },
    "RPE-05_2_O15_s1.jpeg": {
         "label": "759",
         "type": "smoke_test_fail",
@@ -34,9 +19,24 @@
         "type": "smoke_test_fail",
         "note": "Regression sample from CI/CD smoke test"
     },
+    "HUVEC-16_2_L03_s1.jpeg": {
+        "label": "550",
+        "type": "smoke_test_pass",
+        "note": "Regression sample from CI/CD smoke test"
+    },
+   "RPE-01_1_I23_s1.jpeg": {
+        "label": "565",
+        "type": "smoke_test_pass",
+        "note": "Regression sample from CI/CD smoke test"
+    },
    "HEPG2-03_4_J20_s2.jpeg": {
         "label": "136",
         "type": "smoke_test_fail",
+        "note": "Regression sample from CI/CD smoke test"
+    },
+    "RPE-05_4_I16_s2.jpeg": {
+        "label": "136",
+        "type": "smoke_test_pass",
         "note": "Regression sample from CI/CD smoke test"
     },
    "HEPG2-01_1_H09_s1.jpeg": {
