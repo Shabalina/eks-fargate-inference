@@ -60,7 +60,60 @@ s3 = boto3.client(
 if 'page_number' not in st.session_state:
     st.session_state['page_number'] = 0
 
-# Page config
+# Injecting all layout overrides at once
+st.markdown("""
+    <style>
+    /* ==========================================
+       1. GLOBAL / PAGINATION BUTTONS (3:1 Ratio)
+       ========================================== */
+    div[data-testid="stColumn"] .stButton {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important; /* Force wrapper to use full column width */
+    }
+    div[data-testid="stColumn"] button p {
+        line-height: 1.5 !important;
+    }
+    div[data-testid="stColumn"] button {
+        height: 65px !important;  /* Strict height force */
+        width: 195px !important;
+        min-width: 195px !important;    /* FORCE browser to not compress width */
+        flex-shrink: 0 !important;      /* Prevent flexbox shrinking bugs */
+            
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+     /* ==========================================
+       2. GALLERY CONTAINER OVERRIDES (Invisible Stretched Card)
+       ========================================== */
+    /* Turn ONLY the gallery columns into relative parent boxes */
+    div[data-testid="stVerticalBlock"] div[data-testid="stColumn"] {
+        position: relative;
+    }
+            
+    /* Stretch the gallery buttons completely over the image and caption card */
+    div[data-testid="stVerticalBlock"] div[data-testid="stColumn"] .stButton > button {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0 !important; /* Forces the button to be completely invisible */
+        z-index: 10;          /* Places it on top of the graphics layer */
+    }
+    
+    /* Add a clean hover animation to show the image card is interactive */
+    div[data-testid="stVerticalBlock"] div[data-testid="stColumn"]:hover {
+        transform: scale(1.02);
+        transition: transform 0.2s ease-in-out;
+        cursor: pointer;
+    }       
+    </style>
+    """, unsafe_allow_html=True)
+
+# Page title and description
 st.set_page_config(page_title="Cell DINOv2 Classifier", page_icon="🔬", layout="centered")
 st.title("🔬 Cell siRNA Classifier")
 with st.expander("📖 About this Project & Drug Discovery Impact", expanded=False):
@@ -82,72 +135,49 @@ Select a file from the gallery below to run a prediction using the
 """)
 
 # --- s3 GALLERY LOGIC---
-st.subheader("S3 Test Sample Gallery")
-raw_keys = get_s3_images()
-image_keys = get_sorted_s3_keys(raw_keys, curated_filenames)
+with st.container():
+    st.subheader("S3 Test Sample Gallery")
+    raw_keys = get_s3_images()
+    image_keys = get_sorted_s3_keys(raw_keys, curated_filenames)
 
-if image_keys:
-    # Calculate total pages
-    n_images = len(image_keys)
-    n_pages = (n_images // ITEMS_PER_PAGE) + (1 if n_images % ITEMS_PER_PAGE > 0 else 0)
+    if image_keys:
+        # Calculate total pages
+        n_images = len(image_keys)
+        n_pages = (n_images // ITEMS_PER_PAGE) + (1 if n_images % ITEMS_PER_PAGE > 0 else 0)
 
-    # Slice the list for the current page
-    start_idx = st.session_state['page_number'] * ITEMS_PER_PAGE
-    end_idx = start_idx + ITEMS_PER_PAGE
-    current_batch = image_keys[start_idx:end_idx]
+        # Slice the list for the current page
+        start_idx = st.session_state['page_number'] * ITEMS_PER_PAGE
+        end_idx = start_idx + ITEMS_PER_PAGE
+        current_batch = image_keys[start_idx:end_idx]
 
-    # --- RENDER GALLERY ---
-    cols = st.columns(5)
-    for idx, key in enumerate(current_batch):
-        # Generate a temporary URL that lasts for 1 hour
-        url = s3.generate_presigned_url('get_object',
-                                        Params={'Bucket': BUCKET, 'Key': key},
-                                        ExpiresIn=3600)
-        
-        with cols[idx % 5]:
-            st.image(url, use_container_width=True)
-            s3_filename = PurePosixPath(key).name
-            # Display the filename as a caption (truncating if too long)
-            display_name = (s3_filename[:18] + '..') if len(s3_filename) > 20 else s3_filename
-            st.caption(f"📄 {display_name}")
+        # --- RENDER GALLERY ---
+        cols = st.columns(5)
+        for idx, key in enumerate(current_batch):
+            # Generate a temporary URL that lasts for 1 hour
+            url = s3.generate_presigned_url('get_object',
+                                            Params={'Bucket': BUCKET, 'Key': key},
+                                            ExpiresIn=3600)
+            
+            with cols[idx % 5]:
+                st.image(url, use_container_width=True)
+                s3_filename = PurePosixPath(key).name
+                # Display the filename as a caption (truncating if too long)
+                display_name = (s3_filename[:18] + '..') if len(s3_filename) > 20 else s3_filename
+                st.caption(f"📄 {display_name}")
 
-            st.image(url, use_container_width=True)
-            st.caption(f"📄 {display_name}")
+                if st.button("🔎 Analyze This Sample", key=f"btn_{s3_filename}", use_container_width=True):
+                    # Get the raw bytes from S3
+                    image_obj = s3.get_object(Bucket=BUCKET, Key=key)
+                    selected_image_bytes = image_obj['Body'].read()
 
+                    current_filename = s3_filename # Store filename for manifest lookup
 
-            if st.button("🔎 Analyze This Sample", key=f"btn_{s3_filename}", use_container_width=True, type="primary"):
-                # Get the raw bytes from S3
-                image_obj = s3.get_object(Bucket=BUCKET, Key=key)
-                selected_image_bytes = image_obj['Body'].read()
-
-                current_filename = s3_filename # Store filename for manifest lookup
-
-                # Convert bytes to a PIL Image object and store image in session state
-                st.session_state['preview_img'] = Image.open(io.BytesIO(selected_image_bytes))
+                    # Convert bytes to a PIL Image object and store image in session state
+                    st.session_state['preview_img'] = Image.open(io.BytesIO(selected_image_bytes))
 
 
     # --- PAGINATION CONTROLS ---
     st.write(f"Showing page {st.session_state['page_number'] + 1} of {n_pages}")
-
-    st.markdown("""
-    <style>
-    div[data-testid="stColumn"] .stButton {
-        display: flex;
-        justify-content: center;
-    }
-    div[data-testid="stColumn"] button p {
-        line-height: 1.5 !important;
-    }
-    div[data-testid="stColumn"] button {
-        height: 65px !important;  /* Strict height force */
-        width: 195px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
     col_prev, col_spacer, col_next = st.columns([1, 4, 1])
 
     with col_prev:
