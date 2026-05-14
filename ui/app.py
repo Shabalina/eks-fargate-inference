@@ -64,8 +64,14 @@ st.set_page_config(page_title="Cell DINOv2 Classifier", page_icon="🔬", layout
 
 st.markdown("""
     <style>
-    button[title="Enlarge image"] {
+    button[title="Enlarge image"], 
+    button[aria-label="Fullscreen"],
+    .st-emotion-cache-15z783v { 
         display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        width: 0px !important;
+        opacity: 0 !important;
     }
     /* ==========================================
         BUTTONS
@@ -77,14 +83,14 @@ st.markdown("""
     div[data-testid="stColumn"] button p {
         line-height: 1.5 !important;
     }
-    div[data-testid="stColumn"] button:hover {
-        background-color: #2B6CB0 !important; /* Lighter blue on hover */
+    div[data-testid="stColumn"] button:not([aria-label="Fullscreen"]):hover {
+        background-color: #c3e6e6 !important; /* Lighter blue on hover */
         transform: scale(1.03) !important;     /* Subtle pop */
         box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important;
         cursor: pointer !important;
     }
-    div[data-testid="stColumn"] button {
-        background-color: #1A365D !important; 
+    div[data-testid="stColumn"] button:not([aria-label="Fullscreen"]) {
+        background-color: #9bc7c7 !important; 
         color: white !important;
         border: 2px solid #000000 !important; /* Bold black edge */
         border-radius: 4px !important;
