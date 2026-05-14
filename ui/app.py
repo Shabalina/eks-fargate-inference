@@ -91,7 +91,7 @@ st.markdown("""
     }
     div[data-testid="stColumn"] button:not([aria-label="Fullscreen"]) {
         background-color: #9bc7c7 !important; 
-        color: white !important;
+        color: black !important;
         border: 2px solid #000000 !important; /* Bold black edge */
         border-radius: 4px !important;
         font-weight: 700 !important;
