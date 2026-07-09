@@ -1,4 +1,4 @@
-name: Deploy to Amazon ECR
+name: Deploy to Amazon ECR and EKS
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    name: Build and Push
+    name: Build, Provision, and Deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -53,9 +53,6 @@ jobs:
         pip install torch torchvision pillow numpy opencv-python-headless
 
     - name: Run Model Smoke Test
-    #   if: steps.model-changes.outputs.any_changed == 'true'
-    #   env:
-    #    PYTHONPATH: ${{ github.workspace }}
       run: python -m tests.model_smoke_test
 
     - name: Configure AWS Credentials
@@ -74,7 +71,6 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-        IMAGE_TAG: ${{ env.ENV }}
       run: |
         docker buildx build \
           --platform linux/amd64 \
@@ -86,6 +82,7 @@ jobs:
       uses: hashicorp/setup-terraform@v3
 
     - name: Terraform Init
+      working-directory: ./terraform
       run: terraform init -upgrade
 
     - name: Terraform Plan
@@ -99,8 +96,7 @@ jobs:
          -var="image_tag=${{ env.ENV }}" \
          -var="ecr_repo_name=${{ secrets.ECR_REPOSITORY }}" \
          -var="commit_sha=${{ github.sha }}" \
-          -var="ecr_url=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}" \
-          -var="sagemaker_role_arn=${{ secrets.SAGEMAKER_ROLE_ARN }}"
+          -var="ecr_url=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}"
       continue-on-error: false
 
     - name: Terraform Apply
@@ -113,5 +109,32 @@ jobs:
           -var="image_tag=${{ env.ENV }}" \
           -var="ecr_repo_name=${{ secrets.ECR_REPOSITORY }}" \
           -var="commit_sha=${{ github.sha }}" \
-          -var="ecr_url=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}" \
-          -var="sagemaker_role_arn=${{ secrets.SAGEMAKER_ROLE_ARN }}"
+          -var="ecr_url=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}"
+
+    # Installs kubectl on the runner engine
+    - name: Setup kubectl
+      if: (env.ENV == 'prod' || env.ENV == 'qa') && github.event_name == 'push'
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'latest'
+
+    # Authenticates kubectl context securely with fresh EKS Cluster
+    - name: Update Kubeconfig Context
+      if: (env.ENV == 'prod' || env.ENV == 'qa') && github.event_name == 'push'
+      run: |
+        aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name cell-dino-cluster
+
+    - name: Substitute ECR Image URI in Manifest
+      if: (env.ENV == 'prod' || env.ENV == 'qa') && github.event_name == 'push'
+      run: |
+        export IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.ENV }}"
+        sed -i "s|__IMAGE_URI__|$IMAGE_URI|g" k8s/deployment.yaml
+
+    # Deploys app structures straight to EKS Fargate
+    - name: Deploy Manifests to EKS
+      if: (env.ENV == 'prod' || env.ENV == 'qa') && github.event_name == 'push'
+      run: |
+        kubectl apply -f k8s/namespace.yaml
+        kubectl apply -f k8s/deployment.yaml
+        kubectl apply -f k8s/service.yaml
+        kubectl apply -f k8s/ingress.yaml

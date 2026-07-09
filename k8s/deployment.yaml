@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cell-dino-predictor
+  namespace: cell-dino-inference
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cell-dino
+  template:
+    metadata:
+      labels:
+        app: cell-dino
+    spec:
+      containers:
+      - name: cell-dino-api
+        image: __IMAGE_URI__
+        - containerPort: 8000
+        # Resource requests match Fargate's minimal billing allocations
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        # Maps EKS health checks directly to your FastAPI endpoints
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 8000
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 8000
+          initialDelaySeconds: 20
+          periodSeconds: 10

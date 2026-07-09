@@ -25,8 +25,3 @@ variable "ecr_url" {
   type        = string
   description = "The full URL of the ECR repository"
 }
-
-variable "sagemaker_role_arn" {
-  type        = string
-  description = "The ARN of the IAM role SageMaker uses to run the container"
-}
