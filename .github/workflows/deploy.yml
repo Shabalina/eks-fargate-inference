@@ -59,7 +59,7 @@ jobs:
     - name: Substitute Static ECR Image URI in Manifest
       if: github.event_name == 'push'
       run: |
-        export REAL_IMAGE_URI="${{ secrets.STATIC_ECR_URL }}:latest"
+        export REAL_IMAGE_URI="${{ secrets.STATIC_ECR_URL }}"
         sed -i "s|__IMAGE_URI__|$REAL_IMAGE_URI|g" k8s/deployment.yaml
 
     # Deploys app configurations straight to EKS Fargate
