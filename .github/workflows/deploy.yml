@@ -35,38 +35,38 @@ jobs:
           -var="region=${{ secrets.AWS_REGION }}"
       continue-on-error: false
 
-    - name: Terraform Apply
-      if: github.event_name == 'push'
-      working-directory: ./terraform
-      run: |
-        terraform apply -var="env=prod" -auto-approve \
-          -var="region=${{ secrets.AWS_REGION }}"
+    # - name: Terraform Apply
+    #   if: github.event_name == 'push'
+    #   working-directory: ./terraform
+    #   run: |
+    #     terraform apply -var="env=prod" -auto-approve \
+    #       -var="region=${{ secrets.AWS_REGION }}"
 
-    # Installs kubectl on the runner engine
-    - name: Setup kubectl
-      if: github.event_name == 'push'
-      uses: azure/setup-kubectl@v4
-      with:
-        version: 'latest'
+    # # Installs kubectl on the runner engine
+    # - name: Setup kubectl
+    #   if: github.event_name == 'push'
+    #   uses: azure/setup-kubectl@v4
+    #   with:
+    #     version: 'latest'
 
-    # Authenticates kubectl context securely with your fresh EKS Cluster
-    - name: Update Kubeconfig Context
-      if: github.event_name == 'push'
-      run: |
-        aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name cell-dino-cluster
+    # # Authenticates kubectl context securely with your fresh EKS Cluster
+    # - name: Update Kubeconfig Context
+    #   if: github.event_name == 'push'
+    #   run: |
+    #     aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name cell-dino-cluster
 
-    # Injects your static ECR secret directly into the deployment template string
-    - name: Substitute Static ECR Image URI in Manifest
-      if: github.event_name == 'push'
-      run: |
-        export REAL_IMAGE_URI="${{ secrets.STATIC_ECR_URL }}"
-        sed -i "s|__IMAGE_URI__|$REAL_IMAGE_URI|g" k8s/deployment.yaml
+    # # Injects your static ECR secret directly into the deployment template string
+    # - name: Substitute Static ECR Image URI in Manifest
+    #   if: github.event_name == 'push'
+    #   run: |
+    #     export REAL_IMAGE_URI="${{ secrets.STATIC_ECR_URL }}"
+    #     sed -i "s|__IMAGE_URI__|$REAL_IMAGE_URI|g" k8s/deployment.yaml
 
-    # Deploys app configurations straight to EKS Fargate
-    - name: Deploy Manifests to EKS
-      if: github.event_name == 'push'
-      run: |
-        kubectl apply -f k8s/namespace.yaml
-        kubectl apply -f k8s/deployment.yaml
-        kubectl apply -f k8s/service.yaml
-        kubectl apply -f k8s/ingress.yaml
+    # # Deploys app configurations straight to EKS Fargate
+    # - name: Deploy Manifests to EKS
+    #   if: github.event_name == 'push'
+    #   run: |
+    #     kubectl apply -f k8s/namespace.yaml
+    #     kubectl apply -f k8s/deployment.yaml
+    #     kubectl apply -f k8s/service.yaml
+    #     kubectl apply -f k8s/ingress.yaml
