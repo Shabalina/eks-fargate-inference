@@ -4,7 +4,7 @@ metadata:
   name: cell-dino-predictor
   namespace: cell-dino-inference
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: cell-dino
