@@ -32,7 +32,8 @@ jobs:
       working-directory: ./terraform
       run: |
         terraform plan -var="env=prod" \
-          -var="region=${{ secrets.AWS_REGION }}"
+          -var="region=${{ secrets.AWS_REGION }}" \
+          -var="root_user_id=${{ secrets.ROOT_USER_ID }}"
       continue-on-error: false
 
     - name: Terraform Apply
@@ -40,7 +41,8 @@ jobs:
       working-directory: ./terraform
       run: |
         terraform apply -var="env=prod" -auto-approve \
-          -var="region=${{ secrets.AWS_REGION }}"
+          -var="region=${{ secrets.AWS_REGION }}" \
+          -var="root_user_id=${{ secrets.ROOT_USER_ID }}"
 
     # Installs kubectl on the runner engine
     - name: Setup kubectl

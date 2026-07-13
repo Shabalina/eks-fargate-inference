@@ -8,3 +8,8 @@ variable "env" {
   description = "The deployment environment (e.g., prod)"
   default     = "prod"
 }
+
+variable "root_user_id" {
+  type        = string
+  description = "The AWS account ID of the root user"
+}

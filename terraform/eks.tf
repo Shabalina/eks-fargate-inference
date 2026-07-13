@@ -72,3 +72,19 @@ resource "aws_eks_fargate_profile" "inference_profile" {
 
   depends_on = [aws_iam_role_policy_attachment.fargate_pod_execution]
 }
+
+resource "aws_eks_access_entry" "console_user" {
+  cluster_name      = aws_eks_cluster.main.name
+  principal_arn     = "arn:aws:iam::${var.root_user_id}:root" # Grants access back to your account identities
+  type              = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "console_admin" {
+  cluster_name  = aws_eks_cluster.main.name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = "arn:aws:iam::${var.root_user_id}:root"
+
+  access_scope {
+    type = "cluster"
+  }
+}
