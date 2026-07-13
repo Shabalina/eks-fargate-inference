@@ -60,6 +60,9 @@ resource "aws_eks_fargate_profile" "inference_profile" {
 
   selector {
     namespace = "cell-dino-inference"
+    labels = {
+      app = "cell-dino"
+    }
   }
 
   # Configures Fargate Spot capacity provider to claim a 70% discount
