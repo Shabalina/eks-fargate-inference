@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: cell-dino-api
-        image: __IMAGE_URI__
+        image: "__IMAGE_URI__"
         - containerPort: 8000
         # Resource requests match Fargate's minimal billing allocations
         resources:
