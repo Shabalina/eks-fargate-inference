@@ -127,14 +127,14 @@ resource "aws_eks_access_policy_association" "console_admin" {
 
 resource "aws_eks_access_entry" "developer_user" {
   cluster_name      = aws_eks_cluster.main.name
-  principal_arn     = "arn:aws:iam::${var.root_user_id}:user/shabalinastya"
+  principal_arn     = "arn:aws:iam::${var.root_user_id}:user/awsadmin"
   type              = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "developer_admin" {
   cluster_name  = aws_eks_cluster.main.name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  principal_arn = "arn:aws:iam::${var.root_user_id}:user/shabalinastya"
+  principal_arn = "arn:aws:iam::${var.root_user_id}:user/awsadmin"
 
   access_scope {
     type = "cluster"
