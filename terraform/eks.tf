@@ -137,16 +137,23 @@ data "aws_iam_policy_document" "lbc_assume_role" {
   }
 }
 
-# Create the IAM Role for the controller
-resource "aws_iam_role" "aws_load_balancer_controller" {
-  name               = "eks-aws-load-balancer-controller"
-  assume_role_policy = data.aws_iam_policy_document.lbc_assume_role.json
+# Fetch the official AWS Load Balancer Controller IAM policy document from GitHub
+data "http" "lbc_iam_policy" {
+  url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json"
+}
+
+# Create a customer-managed IAM Policy from the downloaded JSON
+resource "aws_iam_policy" "aws_load_balancer_controller" {
+  name        = "AWSLoadBalancerControllerIAMPolicy"
+  path        = "/"
+  description = "IAM Policy for AWS Load Balancer Controller in EKS"
+  policy      = data.http.lbc_iam_policy.response_body
 }
 
 # Attach AWS official policy allowing controller to build ALBs
 resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller_attach" {
   role       = aws_iam_role.aws_load_balancer_controller.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSLoadBalancerControllerPolicy"
+  policy_arn = aws_iam_policy.aws_load_balancer_controller.arn
 }
 
 # 4. Use Helm provider to install the controller inside kube-system
