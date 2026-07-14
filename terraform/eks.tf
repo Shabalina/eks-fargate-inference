@@ -107,6 +107,80 @@ resource "aws_eks_addon" "coredns" {
   ]
 }
 
+data "tls_certificate" "eks" {
+  url = aws_eks_cluster.main.identity[0].oidc[0].issuer
+}
+
+# Register the OIDC Provider with AWS IAM
+resource "aws_iam_oidc_provider" "main" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
+  url             = aws_eks_cluster.main.identity[0].oidc[0].issuer
+}
+
+# Fetch OIDC details for Service Account authorization
+data "aws_iam_policy_document" "lbc_assume_role" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_eks_cluster.main.identity[0].oidc[0].issuer, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
+    }
+
+    principals {
+      identifiers = [aws_iam_oidc_provider.main.arn] 
+      type        = "Federated"
+    }
+  }
+}
+
+# Create the IAM Role for the controller
+resource "aws_iam_role" "aws_load_balancer_controller" {
+  name               = "eks-aws-load-balancer-controller"
+  assume_role_policy = data.aws_iam_policy_document.lbc_assume_role.json
+}
+
+# Attach AWS official policy allowing controller to build ALBs
+resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller_attach" {
+  role       = aws_iam_role.aws_load_balancer_controller.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSLoadBalancerControllerPolicy"
+}
+
+# 4. Use Helm provider to install the controller inside kube-system
+resource "helm_release" "aws_load_balancer_controller" {
+  name       = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  namespace  = "kube-system"
+
+  set = [
+    {
+      name  = "clusterName"
+      value = aws_eks_cluster.main.name
+    },
+    {
+      name  = "serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = "aws-load-balancer-controller"
+    },
+    {
+      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = aws_iam_role.aws_load_balancer_controller.arn
+    }
+  ]
+
+  # Ensure Fargate is fully ready to host system pods before deploying
+  depends_on = [
+    aws_eks_fargate_profile.kube_system
+  ]
+}
+
 resource "aws_eks_access_entry" "console_user" {
   cluster_name      = aws_eks_cluster.main.name
   principal_arn     = "arn:aws:iam::${var.root_user_id}:root" # Grants access back to your account identities
