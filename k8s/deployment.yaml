@@ -17,7 +17,7 @@ spec:
       - name: cell-dino-api
         image: "__IMAGE_URI__"
         ports:
-        - containerPort: 8000
+        - containerPort: 8080
         # Resource requests match Fargate's minimal billing allocations
         resources:
           requests:
@@ -30,12 +30,14 @@ spec:
         livenessProbe:
           httpGet:
             path: /ping
-            port: 8000
-          initialDelaySeconds: 20
+            port: 8080
+          initialDelaySeconds: 90
           periodSeconds: 10
+          failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /ping
-            port: 8000
-          initialDelaySeconds: 20
+            port: 8080
+          initialDelaySeconds: 60
           periodSeconds: 10
+          failureThreshold: 3
