@@ -78,10 +78,39 @@ resource "aws_eks_fargate_profile" "inference_profile" {
   depends_on = [aws_iam_role_policy_attachment.fargate_pod_execution]
 }
 
+resource "aws_eks_fargate_profile" "kube_system" {
+  cluster_name           = aws_eks_cluster.main.name
+  fargate_profile_name   = "coredns"
+  pod_execution_role_arn = aws_iam_role.fargate.arn
+  subnet_ids             = aws_subnet.private[*].id
+
+  selector {
+    namespace = "kube-system"
+    # Keeping labels empty allows it to capture all pods in this namespace (like CoreDNS)
+  }
+}
+
+resource "aws_eks_addon" "coredns" {
+  cluster_name                = aws_eks_cluster.main.name
+  addon_name                  = "coredns"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+
+  # Pass custom configurations to automatically adapt CoreDNS for Fargate deployment
+  configuration_values = jsonencode({
+    computeType = "Fargate"
+  })
+
+  # Ensure the Fargate profiles are online before provisioning the add-on
+  depends_on = [
+    aws_eks_fargate_profile.kube_system
+  ]
+}
+
 resource "aws_eks_access_entry" "console_user" {
-  cluster_name      = aws_eks_cluster.main.name
-  principal_arn     = "arn:aws:iam::${var.root_user_id}:root" # Grants access back to your account identities
-  type              = "STANDARD"
+  cluster_name  = aws_eks_cluster.main.name
+  principal_arn = "arn:aws:iam::${var.root_user_id}:root" # Grants access back to your account identities
+  type          = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "console_admin" {
@@ -92,4 +121,6 @@ resource "aws_eks_access_policy_association" "console_admin" {
   access_scope {
     type = "cluster"
   }
+
+  depends_on = [aws_eks_access_entry.console_user]
 }
