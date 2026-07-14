@@ -131,10 +131,15 @@ data "aws_iam_policy_document" "lbc_assume_role" {
     }
 
     principals {
-      identifiers = [aws_iam_openid_connect_provider.main.arn] 
+      identifiers = [aws_iam_openid_connect_provider.main.arn]
       type        = "Federated"
     }
   }
+}
+
+resource "aws_iam_role" "aws_load_balancer_controller" {
+  name               = "eks-aws-load-balancer-controller"
+  assume_role_policy = data.aws_iam_policy_document.lbc_assume_role.json
 }
 
 # Fetch the official AWS Load Balancer Controller IAM policy document from GitHub
@@ -149,6 +154,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
   description = "IAM Policy for AWS Load Balancer Controller in EKS"
   policy      = data.http.lbc_iam_policy.response_body
 }
+
 
 # Attach AWS official policy allowing controller to build ALBs
 resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller_attach" {
@@ -189,9 +195,9 @@ resource "helm_release" "aws_load_balancer_controller" {
 }
 
 resource "aws_eks_access_entry" "console_user" {
-  cluster_name      = aws_eks_cluster.main.name
-  principal_arn     = "arn:aws:iam::${var.root_user_id}:root" # Grants access back to your account identities
-  type              = "STANDARD"
+  cluster_name  = aws_eks_cluster.main.name
+  principal_arn = "arn:aws:iam::${var.root_user_id}:root" # Grants access back to your account identities
+  type          = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "console_admin" {
@@ -207,9 +213,9 @@ resource "aws_eks_access_policy_association" "console_admin" {
 }
 
 resource "aws_eks_access_entry" "developer_user" {
-  cluster_name      = aws_eks_cluster.main.name
-  principal_arn     = "arn:aws:iam::${var.root_user_id}:user/awsadmin"
-  type              = "STANDARD"
+  cluster_name  = aws_eks_cluster.main.name
+  principal_arn = "arn:aws:iam::${var.root_user_id}:user/awsadmin"
+  type          = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "developer_admin" {
