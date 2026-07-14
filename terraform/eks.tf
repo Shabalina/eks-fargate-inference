@@ -81,7 +81,7 @@ resource "aws_eks_fargate_profile" "inference_profile" {
 resource "aws_eks_fargate_profile" "kube_system" {
   cluster_name           = aws_eks_cluster.main.name
   fargate_profile_name   = "coredns"
-  pod_execution_role_arn = aws_iam_role.fargate_pod_role.arn 
+  pod_execution_role_arn = aws_iam_role.fargate_pod_role.arn
   subnet_ids             = [aws_subnet.private_a.id, aws_subnet.private_b.id]
 
   selector {
@@ -107,16 +107,18 @@ resource "aws_eks_addon" "coredns" {
   ]
 }
 
-resource "aws_eks_access_entry" "console_user" {
-  cluster_name      = aws_eks_cluster.main.name
-  principal_arn     = "arn:aws:iam::${var.root_user_id}:root" # Grants access back to your account identities
-  type              = "STANDARD"
+resource "aws_eks_access_entry" "cluster_admins" {
+  for_each      = local.cluster_admins
+  cluster_name  = aws_eks_cluster.main.name
+  principal_arn = each.value
+  type          = "STANDARD"
 }
 
-resource "aws_eks_access_policy_association" "console_admin" {
+resource "aws_eks_access_policy_association" "cluster_admins" {
+  for_each      = local.cluster_admins
   cluster_name  = aws_eks_cluster.main.name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  principal_arn = "arn:aws:iam::${var.root_user_id}:root"
+  principal_arn = each.value
 
   access_scope {
     type = "cluster"
