@@ -124,5 +124,5 @@ resource "aws_eks_access_policy_association" "cluster_admins" {
     type = "cluster"
   }
 
-  depends_on = [aws_eks_access_entry.console_user]
+  depends_on = [aws_eks_access_entry.cluster_admins]
 }
