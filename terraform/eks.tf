@@ -81,8 +81,8 @@ resource "aws_eks_fargate_profile" "inference_profile" {
 resource "aws_eks_fargate_profile" "kube_system" {
   cluster_name           = aws_eks_cluster.main.name
   fargate_profile_name   = "coredns"
-  pod_execution_role_arn = aws_iam_role.fargate.arn
-  subnet_ids             = aws_subnet.private[*].id
+  pod_execution_role_arn = aws_iam_role.fargate.arn 
+  subnet_ids             = [aws_subnet.private_a.id, aws_subnet.private_b.id]
 
   selector {
     namespace = "kube-system"
@@ -108,9 +108,9 @@ resource "aws_eks_addon" "coredns" {
 }
 
 resource "aws_eks_access_entry" "console_user" {
-  cluster_name  = aws_eks_cluster.main.name
-  principal_arn = "arn:aws:iam::${var.root_user_id}:root" # Grants access back to your account identities
-  type          = "STANDARD"
+  cluster_name      = aws_eks_cluster.main.name
+  principal_arn     = "arn:aws:iam::${var.root_user_id}:root" # Grants access back to your account identities
+  type              = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "console_admin" {
