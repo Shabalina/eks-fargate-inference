@@ -68,6 +68,14 @@ jobs:
     - name: Deploy Manifests to EKS
       if: github.event_name == 'push'
       run: |
+
+        # 1. Force clear the old deployments and their stuck scheduler states completely
+        kubectl delete -f k8s/deployment.yaml --ignore-not-found=true
+
+        # 2. Give EKS a few seconds to clean up the references
+        sleep 10
+        
+        # 3. Apply fresh manifests
         kubectl apply -f k8s/namespace.yaml
         kubectl apply -f k8s/deployment.yaml
         kubectl apply -f k8s/service.yaml
