@@ -107,22 +107,38 @@ resource "aws_eks_addon" "coredns" {
   ]
 }
 
-resource "aws_eks_access_entry" "cluster_admins" {
-  for_each      = local.cluster_admins
-  cluster_name  = aws_eks_cluster.main.name
-  principal_arn = each.value
-  type          = "STANDARD"
+resource "aws_eks_access_entry" "console_user" {
+  cluster_name      = aws_eks_cluster.main.name
+  principal_arn     = "arn:aws:iam::${var.root_user_id}:root" # Grants access back to your account identities
+  type              = "STANDARD"
 }
 
-resource "aws_eks_access_policy_association" "cluster_admins" {
-  for_each      = local.cluster_admins
+resource "aws_eks_access_policy_association" "console_admin" {
   cluster_name  = aws_eks_cluster.main.name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  principal_arn = each.value
+  principal_arn = "arn:aws:iam::${var.root_user_id}:root"
 
   access_scope {
     type = "cluster"
   }
 
-  depends_on = [aws_eks_access_entry.cluster_admins]
+  depends_on = [aws_eks_access_entry.console_user]
+}
+
+resource "aws_eks_access_entry" "developer_user" {
+  cluster_name      = aws_eks_cluster.main.name
+  principal_arn     = "arn:aws:iam::${var.root_user_id}:user/shabalinastya"
+  type              = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "developer_admin" {
+  cluster_name  = aws_eks_cluster.main.name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = "arn:aws:iam::${var.root_user_id}:user/shabalinastya"
+
+  access_scope {
+    type = "cluster"
+  }
+
+  depends_on = [aws_eks_access_entry.developer_user]
 }
