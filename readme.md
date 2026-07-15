@@ -32,16 +32,13 @@ The system uses an enterprise-grade, serverless Kubernetes design to host high-p
 ![AWS Architectural Diagram](docs/EKS_Fargate_ALB.png)
 
 ### Core Infrastructure Highlights
-* **Serverless Compute (AWS Fargate):** Isolated, custom-sized runtime environments that hold the PyTorch weights permanently in memory, entirely bypassing server maintenance and serverless cold-start latency.
-* **AWS Load Balancer Controller:** Dynamically provisions an Internet-facing Application Load Balancer mapping incoming HTTP port 80 targets directly to Fargate Pod IPs using VPC-native container routing (`target-type: ip`).
+* **Serverless Compute (AWS Fargate):** Isolated, custom-sized runtime environments that hold the PyTorch weights permanently in memory, entirely bypassing server maintenance and serverless cold-start latency.![EKS running pods](docs/eks_pods.png)
+* **AWS Load Balancer Controller:** Dynamically provisions an Internet-facing Application Load Balancer mapping incoming HTTP port 80 targets directly to Fargate Pod IPs using VPC-native container routing (`target-type: ip`). ![ALB monitoring screenshot](docs/ALB_monitor.png)
 * **IAM Roles for Service Accounts (IRSA):** Connects the cluster’s OpenID Connect (OIDC) identity provider directly to AWS IAM. This securely grants the ingress controller pod the precise cloud permission scopes required to build and destroy AWS infrastructure assets dynamically without hardcoded access credentials.
 
-<ins>**EKS running pods - 2 x core DNS, 2 x ALB controller, 1 x model app**<ins>
-![EKS running pods](docs/eks_pods.png)
 
 
-<ins>**ALB monitoring screenshot**<ins>
-![ALB monitoring screenshot](docs/ALB_monitor.png)
+
 
 ---
 
@@ -51,11 +48,8 @@ The system uses an enterprise-grade, serverless Kubernetes design to host high-p
 The system dynamically exposes its machine learning signature via FastAPI's documentation layer, hosted natively behind the AWS Application Load Balancer:
 ```http://k8s-celldino-[...].us-east-1.elb.amazonaws.com/docs```
 
-<ins>**Swagger UI /health enpoint**<ins>
-![Swagger UI /health enpoint](docs/swagger_ping.png)
-
-<ins>**Swagger UI /predictions enpoint**<ins>
-![Swagger UI /predictions enpoint](docs/swagger_predictions.png)
+* Swagger UI /health enpoint ![Swagger UI /health enpoint](docs/swagger_ping.png)
+* Swagger UI /predictions enpoint ![Swagger UI /predictions enpoint](docs/swagger_predictions.png)
 
 ### 2. High-Performance Test Batch Run Logs
 Using a Python script, raw image files are streamed down sequentially from an external S3 bucket directly to the ALB's /invocations endpoint as raw binary payloads.
